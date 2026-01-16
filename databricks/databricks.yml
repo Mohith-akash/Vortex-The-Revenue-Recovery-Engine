@@ -1,0 +1,102 @@
+# Vortex Databricks Job Definition
+# Deploy with: databricks jobs create --json @databricks/job_definition.json
+# Or use databricks bundle deploy if using Asset Bundles
+
+resources:
+  pipelines:
+    vortex_dlt_pipeline:
+      name: "Vortex DLT Pipeline"
+      target: "vortex_main"
+      catalog: "vortex"
+      development: true  # Set to false for production
+      continuous: false  # Set to true for real-time streaming
+      channel: "PREVIEW"
+      photon: true
+      libraries:
+        - notebook:
+            path: "/Workspace/Vortex/notebooks/01_dlt_pipeline"
+      configuration:
+        "vortex.eventhub.name": "vortex-topic"
+      clusters:
+        - label: "default"
+          autoscale:
+            min_workers: 1
+            max_workers: 2  # Keep low for free tier
+
+  jobs:
+    vortex_recovery_job:
+      name: "Vortex Recovery Orchestration"
+      description: "Processes abandoned carts and generates recovery actions"
+      
+      # Schedule: Run every 15 minutes
+      schedule:
+        quartz_cron_expression: "0 */15 * * * ?"
+        timezone_id: "Asia/Kolkata"
+        pause_status: "PAUSED"  # Paused to reduce Azure costs
+      
+      # Email alerts on failure
+      email_notifications:
+        on_failure:
+          - "mohithakash013@gmail.com"
+      
+      # Maximum concurrent runs
+      max_concurrent_runs: 1
+      
+      tasks:
+        # Task 1: Run DLT pipeline first
+        - task_key: "run_dlt_pipeline"
+          pipeline_task:
+            pipeline_id: "${resources.pipelines.vortex_dlt_pipeline.id}"
+            full_refresh: false
+          timeout_seconds: 1800  # 30 minutes max
+          
+        # Task 2: Run recovery processing after DLT completes
+        - task_key: "process_recoveries"
+          depends_on:
+            - task_key: "run_dlt_pipeline"
+          notebook_task:
+            notebook_path: "/Workspace/Vortex/notebooks/02_recovery_orchestration"
+            source: "WORKSPACE"
+          # Use serverless compute (free tier friendly)
+          job_cluster_key: "recovery_cluster"
+          timeout_seconds: 600  # 10 minutes max
+      
+      # Cluster definition for recovery task
+      job_clusters:
+        - job_cluster_key: "recovery_cluster"
+          new_cluster:
+            spark_version: "14.3.x-scala2.12"
+            num_workers: 0  # Single node for cost savings
+            node_type_id: "Standard_DS3_v2"
+            spark_conf:
+              "spark.databricks.cluster.profile": "singleNode"
+              "spark.master": "local[*, 4]"
+            custom_tags:
+              "project": "vortex"
+              "environment": "dev"
+
+    vortex_daily_report:
+      name: "Vortex Daily Analytics Report"
+      description: "Generates daily summary of revenue and abandonment metrics"
+      
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"  # 6 AM daily
+        timezone_id: "Asia/Kolkata"
+        pause_status: "PAUSED"  # Enable when ready
+      
+      tasks:
+        - task_key: "daily_summary"
+          sql_task:
+            warehouse_id: "${var.sql_warehouse_id}"
+            query:
+              query_id: "${var.daily_summary_query_id}"
+          timeout_seconds: 300
+
+# Variables for deployment
+variables:
+  sql_warehouse_id:
+    description: "Databricks SQL Warehouse ID"
+    default: ""
+  daily_summary_query_id:
+    description: "ID of the daily summary SQL query"
+    default: ""
