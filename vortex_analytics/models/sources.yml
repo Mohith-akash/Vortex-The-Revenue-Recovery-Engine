@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: vortex_source
+    database: workspace
+    schema: default
+    tables:
+      - name: vortex_silver
+        description: "Cleaned and guarded transaction data"
