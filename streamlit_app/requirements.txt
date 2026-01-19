@@ -1,0 +1,19 @@
+# Vortex Streamlit App Requirements
+
+# Core
+streamlit>=1.31.0
+pandas>=2.0.0
+plotly>=5.18.0
+
+# Data generation
+faker>=22.0.0
+
+# AI Services (optional - falls back to templates if not available)
+cerebras-cloud-sdk>=1.0.0
+voyageai>=0.2.0
+
+# Azure Event Hub (for production streaming)
+azure-eventhub>=5.11.0
+
+# Utilities
+python-dotenv>=1.0.0
