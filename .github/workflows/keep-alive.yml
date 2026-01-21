@@ -1,0 +1,80 @@
+name: Keep App Alive
+
+on:
+  schedule:
+    # Run every 6 hours to prevent Streamlit Cloud from sleeping
+    - cron: '0 */6 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  wake-up:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install chromium
+
+      - name: Wake up Streamlit app
+        run: |
+          node << 'EOF'
+          const { chromium } = require('playwright');
+
+          (async () => {
+            console.log('🔄 Starting browser to wake up Vortex app...');
+
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage();
+
+            try {
+              // Navigate to the app
+              console.log('📍 Navigating to Vortex app...');
+              await page.goto('https://vortex-the-revenue-recovery-engine.streamlit.app', {
+                waitUntil: 'networkidle',
+                timeout: 120000
+              });
+
+              // Check if app is sleeping
+              const sleepButton = await page.$('button:has-text("Yes, get this app back up")');
+
+              if (sleepButton) {
+                console.log('😴 App is sleeping, clicking wake-up button...');
+                await sleepButton.click();
+
+                // Wait for app to load
+                console.log('⏳ Waiting for app to wake up...');
+                await page.waitForTimeout(60000);
+
+                // Verify app is awake by checking for content
+                await page.waitForSelector('body', { timeout: 60000 });
+                console.log('✅ Vortex is now awake!');
+              } else {
+                console.log('✅ Vortex is already awake!');
+              }
+
+              // Take a screenshot for verification
+              await page.screenshot({ path: 'vortex-status.png' });
+
+            } catch (error) {
+              console.log('⚠️ Error:', error.message);
+            } finally {
+              await browser.close();
+              console.log('🎉 Keep-alive job completed!');
+            }
+          })();
+          EOF
+
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vortex-screenshot
+          path: vortex-status.png
+          retention-days: 1
