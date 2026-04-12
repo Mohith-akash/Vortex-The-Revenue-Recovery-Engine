@@ -227,7 +227,7 @@ Test the recovery engine yourself:
 - ✅ Secure credential handling
 - ✅ Git version control
 - ✅ Clean code organization
-- ✅ Comprehensive documentation
+- ✅ Clear documentation
 
 ---
 
@@ -301,7 +301,7 @@ Vortex-The-Revenue-Recovery-Engine/
 │   ├── databricks_consumer.py  # Event consumer
 │   └── heartbeat.py            # Health check
 ├── streamlit_app/              # Main application
-│   ├── app.py                  # Dashboard (1100+ lines)
+│   ├── app.py                  # Dashboard (7 tabs)
 │   ├── ai_recovery.py          # Cerebras integration
 │   ├── semantic_search.py      # Voyage AI search
 │   ├── data_generator.py       # Sample data
