@@ -3,6 +3,8 @@ Vortex - The Revenue Recovery Engine
 Vibrant dashboard with recovery timing analytics.
 """
 
+import random
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -207,8 +209,6 @@ def render_dashboard():
 
     abandoned = df[df["event_type"] == "cart_abandoned"]  # All abandoned carts
     if len(abandoned) > 0:
-        import random
-
         channels = ["📱 SMS", "📧 Email", "🔔 Push"]
         statuses = ["✅ Delivered", "✅ Opened", "⏳ Pending", "✅ Clicked"]
 
@@ -358,8 +358,6 @@ def render_dashboard():
     st.subheader("📈 Hourly Abandonment Trend & Forecast")
     st.caption("Historical pattern with 6-hour prediction")
 
-    import random
-
     random.seed(len(df))  # Consistent per data generation
 
     # Simulate hourly pattern (past 24 hours + 6 hour forecast)
@@ -438,12 +436,9 @@ def render_recovery_analytics():
 
     # Calculate actual values from the data
     abandoned = df[df["event_type"] == "cart_abandoned"]
-    successful = df[df["event_type"] == "checkout_success"]
 
     total_lost = abandoned["cart_total"].sum()
-    successful["cart_total"].sum()
     num_abandoned = len(abandoned)
-    len(successful)
     avg_cart = abandoned["cart_total"].mean() if len(abandoned) > 0 else 0
 
     # Calculate potential recovery at different timings (based on rates)
@@ -830,9 +825,6 @@ def render_try_it():
             # Webhook Simulator
             st.markdown("---")
             st.markdown("**📡 Webhook Delivery Simulation:**")
-
-            import random
-            import time
 
             webhook_log = st.empty()
 
@@ -1233,15 +1225,11 @@ def render_ab_testing():
         return
 
     # Simulate A/B test data based on current data (changes with new data)
-    import random
-
     random.seed(total_abandoned + int(abandoned["cart_total"].sum()) % 1000)  # Data-dependent seed
 
     # Create experiment scenarios with slight variations based on data
     def vary(base, variance=0.05):
         return base * (1 + random.uniform(-variance, variance))
-
-    abandoned["cart_total"].mean() if len(abandoned) > 0 else 150
 
     experiments = {
         "Urgency vs Friendly": {
@@ -1311,10 +1299,6 @@ def render_ab_testing():
 
     for col, (_variant_key, variant) in zip([col1, col2], exp.items(), strict=False):
         with col:
-            int(variant["sends"] * variant["opens"])
-            int(variant["sends"] * variant["clicks"])
-            int(variant["sends"] * variant["conversions"])
-
             st.subheader(variant["name"])
             st.caption(f'"{variant["message"]}"')
 
