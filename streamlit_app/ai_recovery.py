@@ -5,12 +5,12 @@ Falls back to templates if API is unavailable.
 """
 
 import os
-from typing import Optional
 from dataclasses import dataclass
 
 # Try to import Cerebras SDK
 try:
     from cerebras.cloud.sdk import Cerebras
+
     CEREBRAS_AVAILABLE = True
 except ImportError:
     CEREBRAS_AVAILABLE = False
@@ -20,6 +20,7 @@ except ImportError:
 @dataclass
 class RecoveryContext:
     """Context for generating a recovery message."""
+
     customer_name: str
     customer_archetype: str
     product_name: str
@@ -27,7 +28,7 @@ class RecoveryContext:
     cart_total: float
     abandonment_stage: str
     is_returning: bool
-    discount_code: Optional[str]
+    discount_code: str | None
     utm_source: str
     session_duration: int
     page_views: int
@@ -54,22 +55,22 @@ FALLBACK_TEMPLATES = {
 
 class AIRecoveryEngine:
     """Generate AI-powered recovery messages using Cerebras Llama 3.1 8B."""
-    
+
     # Use Llama 3.1 8B - cheapest model at $0.10/M tokens
     MODEL = "llama-3.1-8b"
-    
-    def __init__(self, api_key: Optional[str] = None):
+
+    def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.getenv("CEREBRAS_API_KEY")
         self.client = None
         self.is_connected = False
-        
+
         if self.api_key and CEREBRAS_AVAILABLE:
             try:
                 self.client = Cerebras(api_key=self.api_key)
                 self.is_connected = True
             except Exception:
                 self.client = None
-    
+
     def generate_message(self, context: RecoveryContext) -> dict:
         """
         Generate a personalized recovery message.
@@ -79,12 +80,12 @@ class AIRecoveryEngine:
             return self._generate_ai_message(context)
         else:
             return self._generate_template_message(context)
-    
+
     def _generate_ai_message(self, context: RecoveryContext) -> dict:
         """Use Cerebras LLM to generate personalized message."""
-        
+
         persona = ARCHETYPE_PERSONAS.get(context.customer_archetype, "Be helpful and friendly.")
-        
+
         prompt = f"""Generate ONE cart recovery message for:
 
 Customer: {context.customer_name} ({context.customer_archetype})
@@ -106,56 +107,67 @@ Output the message only, no quotes, no alternatives, no explanations."""
             response = self.client.chat.completions.create(
                 model=self.MODEL,
                 messages=[
-                    {"role": "system", "content": "You output ONLY the recovery message text. No commentary, no quotes, no alternatives. Just the message."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You output ONLY the recovery message text. No commentary, no quotes, no alternatives. Just the message.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
                 max_tokens=60,
                 temperature=0.7,
             )
-            
+
             message = response.choices[0].message.content.strip()
-            
+
             # Clean up the response - remove quotes
             if message.startswith('"') and message.endswith('"'):
                 message = message[1:-1]
             if message.startswith("'") and message.endswith("'"):
                 message = message[1:-1]
-            
+
             # Remove any "Alternatively..." or "Here's..." prefix/suffix
             cutoff_phrases = [
-                "Alternatively,", "Here's", "Another option", "Or you could",
-                "Note:", "P.S.", "---", "Option 2", "Message:", "Here is"
+                "Alternatively,",
+                "Here's",
+                "Another option",
+                "Or you could",
+                "Note:",
+                "P.S.",
+                "---",
+                "Option 2",
+                "Message:",
+                "Here is",
             ]
             for phrase in cutoff_phrases:
                 if phrase in message:
                     message = message.split(phrase)[0].strip()
-            
+
             # Take only the first sentence/paragraph if multiple
             if "\n\n" in message:
                 message = message.split("\n\n")[0].strip()
-            
+
             # Remove trailing incomplete sentences
             if message.endswith(("could", "would", "should", "might", "can")):
                 message = message.rsplit(".", 1)[0] + "." if "." in message else message
-            
+
             return {
                 "message": message,
                 "channel": self._select_channel(context),
                 "is_ai_generated": True,
                 "model": self.MODEL,
             }
-            
+
         except Exception:
             return self._generate_template_message(context)
-    
+
     def _generate_template_message(self, context: RecoveryContext) -> dict:
         """Fallback to template-based messages."""
-        
+
         template = FALLBACK_TEMPLATES.get(
             context.customer_archetype,
-            "Hi {name}! Your {product} is waiting. Complete your order: ${total:.2f}"
+            "Hi {name}! Your {product} is waiting. Complete your order: ${total:.2f}",
         )
-        
+
         # Calculate discounted price if applicable
         discount_pct = 0
         if context.discount_code:
@@ -167,9 +179,9 @@ Output the message only, no quotes, no alternatives, no explanations."""
                 discount_pct = 0.20
             elif "30" in context.discount_code:
                 discount_pct = 0.30
-        
+
         discounted = context.cart_total * (1 - discount_pct)
-        
+
         message = template.format(
             name=context.customer_name.split()[0],  # First name only
             product=context.product_name,
@@ -177,14 +189,14 @@ Output the message only, no quotes, no alternatives, no explanations."""
             discount=context.discount_code or "10%",
             discounted=discounted,
         )
-        
+
         return {
             "message": message,
             "channel": self._select_channel(context),
             "is_ai_generated": False,
             "model": "template",
         }
-    
+
     def _select_channel(self, context: RecoveryContext) -> str:
         """Choose the best channel based on priority and cart value."""
         if context.cart_total >= 500:
@@ -217,6 +229,7 @@ def create_recovery_context_from_event(event: dict) -> RecoveryContext:
 # Singleton instance
 _engine = None
 
+
 def get_recovery_engine() -> AIRecoveryEngine:
     """Get or create the recovery engine singleton."""
     global _engine
@@ -228,7 +241,7 @@ def get_recovery_engine() -> AIRecoveryEngine:
 if __name__ == "__main__":
     # Test the recovery engine
     engine = AIRecoveryEngine()
-    
+
     test_context = RecoveryContext(
         customer_name="Sarah Johnson",
         customer_archetype="WindowShopper",
@@ -242,7 +255,7 @@ if __name__ == "__main__":
         session_duration=480,
         page_views=12,
     )
-    
+
     result = engine.generate_message(test_context)
     print(f"Channel: {result['channel']}")
     print(f"AI Generated: {result['is_ai_generated']}")
