@@ -2,8 +2,8 @@ version: 2
 
 sources:
   - name: vortex_source
-    database: workspace
-    schema: default
+    database: vortex
+    schema: main
     tables:
-      - name: vortex_silver
+      - name: silver_events
         description: "Cleaned and guarded transaction data"

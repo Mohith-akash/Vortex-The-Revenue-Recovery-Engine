@@ -8,13 +8,25 @@ for personalized messaging.
 
 import json
 import os
+import sys
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Reuse the canonical fallback templates from the Streamlit app's ai_recovery
+# module so there is a single source of truth for per-archetype message text.
+_APP_DIR = Path(__file__).resolve().parent.parent / "streamlit_app"
+if str(_APP_DIR) not in sys.path:
+    sys.path.insert(0, str(_APP_DIR))
+try:
+    from ai_recovery import FALLBACK_TEMPLATES as _SHARED_TEMPLATES
+except ImportError:
+    _SHARED_TEMPLATES = {}
 
 # Cerebras API config - will be used for AI-powered recovery messages
 CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY")
@@ -94,34 +106,30 @@ def generate_recovery_message(
     """
     Create a personalized recovery message.
 
-    This is the basic template version. When Cerebras API is configured,
-    we'll use AI to generate more compelling personalized messages.
+    Uses the shared FALLBACK_TEMPLATES defined in streamlit_app/ai_recovery.py
+    to avoid duplicating per-archetype message copy in two places. Falls back to
+    a local multi-item string if the shared templates aren't importable (e.g.
+    when this script is copied somewhere without the streamlit_app package).
     """
-    # Get the main item in the cart
     main_item = cart_items[0]["name"] if cart_items else "your items"
     item_count = len(cart_items)
+    discount_label = discount_used or "10%"
+    discounted = cart_total * 0.9
 
-    # Different messaging strategies based on archetype
-    if archetype == "PriceChecker":
-        # They're price sensitive, lead with savings
-        if discount_used:
-            return f"Your {main_item} is still waiting! Your {discount_used} code is about to expire. Complete your order: ${cart_total:.2f}"
-        return f"Still thinking about {main_item}? We found a 10% discount for you! New total: ${cart_total * 0.9:.2f}"
+    template = _SHARED_TEMPLATES.get(archetype)
+    if template:
+        return template.format(
+            name="there",  # No per-user name available at this call site
+            product=main_item,
+            total=cart_total,
+            discount=discount_label,
+            discounted=discounted,
+        )
 
-    elif archetype == "WindowShopper":
-        # They got cold feet at shipping - address that concern
-        return f"Free shipping on your {main_item}! Complete your ${cart_total:.2f} order today and we'll cover delivery."
-
-    elif archetype in ["ImpulseBuyer", "CommittedBuyer"]:
-        # These folks just need a reminder
-        if item_count > 1:
-            return (
-                f"You left {item_count} items in your cart (${cart_total:.2f}). Ready to check out?"
-            )
-        return f"Your {main_item} is still in your cart! Complete your purchase: ${cart_total:.2f}"
-
-    # Generic fallback
-    return f"Don't forget about your cart! {main_item} and {item_count - 1} other items are waiting for you."
+    # Local fallback if shared templates couldn't be imported
+    if item_count > 1:
+        return f"You left {item_count} items in your cart (${cart_total:.2f}). Ready to check out?"
+    return f"Your {main_item} is still in your cart! Complete your purchase: ${cart_total:.2f}"
 
 
 async def generate_ai_recovery_message(

@@ -226,18 +226,6 @@ def create_recovery_context_from_event(event: dict) -> RecoveryContext:
     )
 
 
-# Singleton instance
-_engine = None
-
-
-def get_recovery_engine() -> AIRecoveryEngine:
-    """Get or create the recovery engine singleton."""
-    global _engine
-    if _engine is None:
-        _engine = AIRecoveryEngine()
-    return _engine
-
-
 if __name__ == "__main__":
     # Test the recovery engine
     engine = AIRecoveryEngine()

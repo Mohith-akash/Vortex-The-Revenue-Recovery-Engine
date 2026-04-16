@@ -12,7 +12,16 @@ from faker import Faker
 
 fake = Faker()
 
-# Expanded product catalog with 25+ items
+# Expanded product catalog with 25+ items.
+#
+# NOTE: There is a second, smaller product catalog in scripts/traffic_generator.py
+# (10 products, different IDs/prices). They are intentionally separate:
+#   - This catalog (dicts) backs the Streamlit demo UI and needs variety for the
+#     product dropdown and charts.
+#   - The traffic_generator catalog (Product dataclass) drives the Azure Event
+#     Hub streaming simulation and is tuned for weighted sampling.
+# The shapes differ (dict vs dataclass), so they are not trivially interchangeable.
+# If you consolidate, pick one representation and update both consumers.
 PRODUCTS = [
     # Electronics
     {

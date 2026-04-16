@@ -354,30 +354,42 @@ def render_dashboard():
 
     st.markdown("---")
 
-    # Hourly Abandonment Forecast
-    st.subheader("📈 Hourly Abandonment Trend & Forecast")
-    st.caption("Historical pattern with 6-hour prediction")
-
-    random.seed(len(df))  # Consistent per data generation
+    # Hourly Abandonment Trend (Simulated baseline pattern)
+    st.subheader("📈 Hourly Abandonment Trend — Simulated Baseline")
+    st.caption(
+        "Simulated baseline pattern (not a real forecast). "
+        "Past 24h is a deterministic diurnal curve seeded on the generated data; "
+        "the next 6h is a 7-point rolling average of that curve."
+    )
 
     # Simulate hourly pattern (past 24 hours + 6 hour forecast)
     hours = list(range(-24, 7))
     base_rate = len(df[df["event_type"] == "cart_abandoned"]) / 24
 
-    # Simulate realistic hourly pattern (higher during day, lower at night)
-    hourly_pattern = []
-    for h in hours:
+    # Deterministic diurnal pattern (no randomness) — higher during day, lower at night
+    historical = []
+    for h in hours[:24]:
         hour_of_day = (h % 24 + 24) % 24  # Convert to 0-23
         # Peak during 10am-8pm, low at night
         if 10 <= hour_of_day <= 20:
-            multiplier = 1.2 + random.uniform(-0.2, 0.2)
+            multiplier = 1.2
         elif 6 <= hour_of_day < 10 or 20 < hour_of_day <= 23:
-            multiplier = 0.8 + random.uniform(-0.15, 0.15)
+            multiplier = 0.8
         else:
-            multiplier = 0.4 + random.uniform(-0.1, 0.1)
+            multiplier = 0.4
+        historical.append(int(base_rate * multiplier))
 
-        count = int(base_rate * multiplier)
-        hourly_pattern.append(count)
+    # Honest "forecast": simple 7-point rolling average of the historical curve
+    # extended forward. No randomness, no fake ML — just a moving average.
+    hist_series = pd.Series(historical)
+    rolling = hist_series.rolling(window=7, min_periods=1).mean()
+    last_avg = float(rolling.iloc[-1])
+    forecast = [int(round(last_avg))] * 6
+    # Smooth toward the rolling mean of the tail
+    tail_mean = float(hist_series.tail(7).mean())
+    forecast = [int(round((last_avg + tail_mean) / 2))] * 6
+
+    hourly_pattern = historical + forecast
 
     # Create the chart
     fig = go.Figure()
@@ -394,13 +406,13 @@ def render_dashboard():
         )
     )
 
-    # Forecast (next 6 hours)
+    # Projection (next 6 hours) — rolling-average extension, not a real forecast
     fig.add_trace(
         go.Scatter(
             x=hours[24:],
             y=hourly_pattern[24:],
             mode="lines+markers",
-            name="Forecast",
+            name="Rolling-avg projection",
             line=dict(color="#ec4899", width=2, dash="dash"),
             marker=dict(size=8, symbol="diamond"),
         )
@@ -418,10 +430,10 @@ def render_dashboard():
     )
     st.plotly_chart(fig)
 
-    # Forecast insight
+    # Projection insight (rolling-average based, not a real forecast)
     forecast_total = sum(hourly_pattern[24:])
     col1, col2, col3 = st.columns(3)
-    col1.metric("🔮 Next 6h Forecast", f"{forecast_total} carts")
+    col1.metric("📉 Next 6h (rolling avg)", f"{forecast_total} carts")
     col2.metric("💰 At Risk", f"${forecast_total * (df['cart_total'].mean() or 150):,.0f}")
     col3.metric(
         "🎯 Recoverable", f"${forecast_total * (df['cart_total'].mean() or 150) * 0.32:,.0f}"
@@ -1152,8 +1164,8 @@ def render_architecture():
             "Embeddings",
             "Semantic search",
         ],
-        "Software Engineering": ["Python", "API design", "CI/CD", "Git", "Modular code"],
-        "Data Visualization": ["Plotly", "Streamlit", "Dashboard design", "UX/UI"],
+        "Software Engineering": ["Python", "API design", "CI/CD", "Modular code"],
+        "Data Visualization": ["Plotly", "Streamlit", "Dashboard design"],
         "Cloud & DevOps": [
             "Azure Event Hub",
             "Databricks",

@@ -76,7 +76,16 @@ class Product:
     popularity: float = 1.0  # Higher = more likely to be added to cart
 
 
-# Expanded catalog with realistic price points and popularity weights
+# Realistic price points and popularity weights for streaming simulation.
+#
+# NOTE: There is a second product catalog in streamlit_app/data_generator.py
+# (25 items, dict shape). This one is intentionally separate:
+#   - This catalog (Product dataclass) feeds the Azure Event Hub streaming
+#     simulator and is tuned for weighted sampling.
+#   - The data_generator catalog backs the Streamlit demo UI (product dropdown,
+#     charts) and needs more variety.
+# Shapes differ (dataclass vs dict), so they are not trivially interchangeable.
+# If you consolidate, pick one representation and update both consumers.
 PRODUCT_CATALOG: list[Product] = [
     Product("p_001", "MacBook Pro 16", "Electronics", 2499.00, 0.8),
     Product("p_002", "Nike Air Jordan 1", "Fashion", 180.00, 1.5),

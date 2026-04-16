@@ -280,18 +280,6 @@ class SemanticSearchEngine:
         return patterns
 
 
-# Singleton instance
-_engine = None
-
-
-def get_search_engine() -> SemanticSearchEngine:
-    """Get or create the search engine singleton."""
-    global _engine
-    if _engine is None:
-        _engine = SemanticSearchEngine()
-    return _engine
-
-
 if __name__ == "__main__":
     # Test the search engine
     from data_generator import generate_sample_data
