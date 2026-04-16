@@ -35,9 +35,10 @@ resources:
         pause_status: "PAUSED"  # Paused to reduce Azure costs
       
       # Email alerts on failure
+      # Set your email here or use ${workspace.current_user.userName}
       email_notifications:
         on_failure:
-          - "mohithakash013@gmail.com"
+          - "${var.alert_email}"
       
       # Maximum concurrent runs
       max_concurrent_runs: 1
@@ -94,6 +95,9 @@ resources:
 
 # Variables for deployment
 variables:
+  alert_email:
+    description: "Email address for failure notifications (or use ${workspace.current_user.userName})"
+    default: "${workspace.current_user.userName}"
   sql_warehouse_id:
     description: "Databricks SQL Warehouse ID"
     default: ""

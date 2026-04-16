@@ -5,7 +5,7 @@
 
 with silver_data as (
     -- We read from the source we just defined in sources.yml
-    select * from {{ source('vortex_source', 'vortex_silver') }}
+    select * from {{ source('vortex_source', 'silver_events') }}
 ),
 
 aggregated_data as (

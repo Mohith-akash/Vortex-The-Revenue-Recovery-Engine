@@ -71,7 +71,7 @@ KPI dashboard with dark theme and CSS animations. Uses generated sample data for
 | 💰 Revenue at Risk | Total value from abandoned carts |
 | 🎯 Recoverable | Projected recovery at optimal timing |
 | 📈 Conversion Rate | Checkout success percentage |
-| 🔮 6-Hour Forecast | Predicted at-risk carts using trend analysis |
+| 📉 6-Hour Rolling Average | Simulated baseline projection (rolling mean, not a real forecast) |
 
 ### 🧪 A/B Testing Engine
 Experiment framework for recovery messages (demo with simulated variants):
@@ -195,14 +195,14 @@ Test the recovery engine yourself:
 - ✅ Medallion pattern (Bronze → Silver → Gold)
 - ✅ SQL transformations with dbt Core
 - ✅ Delta Lake features (ACID, time travel, schema evolution)
-- ✅ Data quality validation and sessionization
+- ✅ Data quality validation and session-based event tracking (session IDs assigned at generation)
 
 ### Analytics & Statistics
 - ✅ KPI dashboard development
 - ✅ A/B testing with statistical significance (z-score, 95% CI)
 - ✅ Conversion funnel analysis
 - ✅ Cohort analysis by customer archetype
-- ✅ Time-series forecasting (trend extrapolation)
+- ✅ Simulated forecast visualization
 - ✅ ROI modeling and revenue attribution
 
 ### AI/ML Engineering
@@ -217,17 +217,12 @@ Test the recovery engine yourself:
 - ✅ Interactive web application (Streamlit)
 - ✅ Data visualization (Plotly)
 - ✅ Custom CSS animations and theming
-- ✅ Session state management
-- ✅ Responsive UI design
 - ✅ Real-time data simulation
 
 ### DevOps & Best Practices
 - ✅ CI/CD pipeline (GitHub Actions — lint + deploy)
 - ✅ Environment variable management
 - ✅ Secure credential handling
-- ✅ Git version control
-- ✅ Clean code organization
-- ✅ Clear documentation
 
 ---
 
@@ -293,7 +288,7 @@ Vortex-The-Revenue-Recovery-Engine/
 │   ├── 02_recovery_orchestration.py
 │   ├── 03_time_travel_demo.py
 │   ├── 04_dashboard_queries.sql
-│   ├── 05_streaming_pipeline.py
+│   ├── 05_streaming_pipeline_no_dlt.py
 │   └── 06_sample_data_setup.py
 ├── scripts/                    # Utility scripts
 │   ├── traffic_generator.py    # Event simulation
