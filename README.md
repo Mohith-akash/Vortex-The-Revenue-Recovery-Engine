@@ -1,374 +1,153 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/🚀_Status-Live-brightgreen?style=for-the-badge" alt="Status"/>
-  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
-  <img src="https://img.shields.io/badge/Streamlit-1.31+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Streamlit"/>
-  <img src="https://img.shields.io/badge/Databricks-Delta%20Lake-FF3621?style=for-the-badge&logo=databricks&logoColor=white" alt="Databricks"/>
-  <img src="https://img.shields.io/badge/Cerebras-LLaMA_3.1-00D4AA?style=for-the-badge" alt="Cerebras"/>
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
-</p>
+# Vortex: Revenue Recovery Engine
 
-<h1 align="center">🌀 Vortex: The Revenue Recovery Engine</h1>
+Real-time cart-abandonment recovery platform: e-commerce events stream through Azure Event Hubs into a Databricks medallion lakehouse, and an LLM generates personalized recovery messages per customer archetype.
 
-<p align="center">
-  <strong>AI-Powered Cart Abandonment Recovery Platform</strong><br/>
-  <em>Real-time streaming • LLM personalization • Semantic search • A/B testing</em>
-</p>
+**Live demo:** https://vortex-the-revenue-recovery-engine.streamlit.app/
 
-<p align="center">
-  <a href="https://vortex-the-revenue-recovery-engine.streamlit.app/">
-    <img src="https://img.shields.io/badge/▶_TRY_LIVE_DEMO-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Live Demo"/>
-  </a>
-</p>
+## About the demo
 
-<p align="center">
-  <a href="#-features">Features</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-architecture">Architecture</a> •
-  <a href="#-skills-demonstrated">Skills</a> •
-  <a href="#-quick-start">Quick Start</a>
-</p>
+The public demo runs on **generated sample data** (~1,000 events), because keeping Event Hubs plus a Databricks cluster hot 24/7 costs real money for a portfolio project. The streaming pipeline itself is real and in this repo: `scripts/traffic_generator.py` produces events into Azure Event Hubs, and the notebooks in `notebooks/` consume them into Bronze/Silver/Gold Delta tables with end-to-end latency under 500ms. The demo showcases the analytics and AI layers on top of a static snapshot of that data.
 
----
+What you can do in the demo:
 
-## 🎯 Problem Statement
+- KPI dashboard with revenue-at-risk and recovery metrics
+- AI recovery-message generation (Cerebras LLaMA 3.1-8B)
+- Semantic session search (Voyage AI embeddings)
+- A/B testing framework with z-score significance
+- Interactive cart-abandonment simulator
 
-With average cart abandonment rates at ~70%, e-commerce businesses lose the majority of potential sales.
+## Problem
 
-**Vortex solves this by:**
-| Challenge | Solution |
+Average cart-abandonment rates sit around 70% — most potential e-commerce revenue never converts.
+
+| Challenge | Approach |
 |-----------|----------|
-| Late detection | ⚡ Real-time event streaming via Azure Event Hub |
-| Generic messages | 🧠 AI-personalized recovery using Cerebras LLaMA 3.1 |
-| No optimization | 🧪 A/B testing with statistical significance |
-| Hard to find patterns | 🔍 Semantic search with Voyage AI embeddings |
+| Late detection | Streaming ingestion via Azure Event Hubs |
+| Generic messages | LLM-personalized recovery per customer archetype |
+| No optimization | A/B testing with statistical significance |
+| Hidden patterns | Semantic search over session embeddings |
 
----
-
-## 🚀 Live Demo
-
-<p align="center">
-  <a href="https://vortex-the-revenue-recovery-engine.streamlit.app/">
-    <strong>👉 https://vortex-the-revenue-recovery-engine.streamlit.app/</strong>
-  </a>
-</p>
-
-**The demo runs on generated sample data (1000 events) to showcase the platform's capabilities:**
-- 📊 Dashboard with KPIs and interactive charts
-- 🤖 AI message generation (Cerebras LLaMA 3.1-8B)
-- 🔍 Semantic session search (Voyage AI)
-- 🧪 A/B testing framework with z-score analysis
-- 🎮 Interactive cart abandonment simulator
-
----
-
-## ✨ Features
-
-### 📊 Executive Dashboard
-KPI dashboard with dark theme and CSS animations. Uses generated sample data for demo.
-
-| Metric | Description |
-|--------|-------------|
-| 💰 Revenue at Risk | Total value from abandoned carts |
-| 🎯 Recoverable | Projected recovery at optimal timing |
-| 📈 Conversion Rate | Checkout success percentage |
-| 📉 6-Hour Rolling Average | Simulated baseline projection (rolling mean, not a real forecast) |
-
-### 🧪 A/B Testing Engine
-Experiment framework for recovery messages (demo with simulated variants):
-- **3 Experiments**: Urgency vs Friendly, Discount vs Free Shipping, SMS vs Email
-- **Statistical Significance**: Z-score with 95% confidence intervals
-- **Revenue Impact**: Projected lift from winning variants
-
-### 🤖 AI Recovery Messages
-Personalized outreach powered by **Cerebras Cloud (LLaMA 3.1-8B)**:
-- Customer archetype detection (Bargain Hunter, Premium Shopper, etc.)
-- Context-aware tone and urgency matching
-- Multi-channel support (SMS, Email, Push)
-- Webhook delivery simulation with animated console
-
-### 🔍 Semantic Search
-Find similar sessions using **Voyage AI embeddings**:
-- Natural language queries ("high-value electronics abandonments")
-- Cosine similarity scoring with color-coded results
-- Session analytics with conversion breakdown
-- Fallback keyword matching when API unavailable
-
-### ⏱️ Recovery Analytics
-Deep-dive timing analysis with ROI modeling:
-- **5-min vs 24-hour recovery windows**
-- Channel effectiveness comparison (SMS, Push, Email)
-- Interactive ROI calculator
-- Priority explainability with scoring breakdown
-
-### 🎮 Interactive Simulator
-Test the recovery engine yourself:
-- Build a shopping cart with real products
-- Simulate abandonment scenarios
-- Watch AI generate personalized recovery in real-time
-- Track session journey with webhook simulation
-
----
-
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                          DATA INGESTION                              │
-├─────────────────────────────────────────────────────────────────────┤
-│  E-commerce Events → Azure Event Hub → Delta Live Tables             │
+│  INGESTION                                                           │
+│  E-commerce events → Azure Event Hubs → Delta Live Tables            │
 │  (page_view, add_to_cart, checkout_success, cart_abandoned)          │
 └─────────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    MEDALLION ARCHITECTURE                            │
-├─────────────────────────────────────────────────────────────────────┤
-│  Databricks + Delta Lake + dbt Core                                  │
-│  ├── 🥉 Bronze: Raw event ingestion                                  │
-│  ├── 🥈 Silver: Cleaned, validated, sessionized                      │
-│  └── 🥇 Gold: Aggregated metrics + recovery candidates               │
+│  MEDALLION LAKEHOUSE (Databricks + Delta Lake + dbt Core)            │
+│  ├── Bronze: raw event ingestion                                     │
+│  ├── Silver: cleaned, validated, sessionized                         │
+│  └── Gold:   aggregated metrics + recovery candidates                │
 └─────────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         AI SERVICES                                  │
-├─────────────────────────────────────────────────────────────────────┤
-│  Cerebras Cloud (LLaMA 3.1-8B)  →  Recovery message generation       │
-│  Voyage AI (voyage-2)           →  Semantic embeddings + search      │
+│  AI SERVICES                                                         │
+│  Cerebras (LLaMA 3.1-8B) → recovery message generation               │
+│  Voyage AI (voyage-2)    → semantic embeddings + search              │
 └─────────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                       PRESENTATION LAYER                             │
-├─────────────────────────────────────────────────────────────────────┤
-│  Streamlit Dashboard (7 Interactive Tabs)                            │
-│  ├── Dashboard       │  Recovery Analytics  │  A/B Testing           │
-│  ├── Try It Yourself │  Recovery Queue      │  Semantic Search       │
-│  └── Architecture                                                    │
+│  PRESENTATION                                                        │
+│  Streamlit dashboard: KPIs | Recovery Analytics | A/B Testing |      │
+│  Simulator | Recovery Queue | Semantic Search | Architecture         │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
----
+Data quality is enforced with DLT expectations on every layer — bad records are quarantined into a dead-letter table instead of failing the pipeline. dbt Core models build the cart-abandonment analytics, including a recovery queue for carts over $500.
 
-## 🛠️ Tech Stack
+## Features
 
-### Data Engineering
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| **Streaming** | Azure Event Hub | Real-time event ingestion |
-| **Lakehouse** | Databricks + Delta Lake | ACID transactions, time travel |
-| **Transformation** | dbt Core | SQL-based data modeling |
-| **Orchestration** | Databricks Workflows | Pipeline scheduling |
-| **Architecture** | Medallion (Bronze/Silver/Gold) | Data quality layers |
+**Recovery analytics** — timing analysis comparing 5-minute vs 24-hour response windows, channel effectiveness (SMS/push/email), and an ROI calculator with priority-scoring breakdown.
 
-### AI/ML
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| **LLM** | Cerebras Cloud (LLaMA 3.1-8B) | Recovery message generation |
-| **Embeddings** | Voyage AI (voyage-2) | Semantic search vectors |
-| **Similarity** | Cosine Distance | Session matching |
-| **Statistics** | Z-Score Testing | A/B experiment significance |
+**AI recovery messages** — customer archetype detection (bargain hunter, premium shopper, ...), context-aware tone matching, multi-channel templates, and graceful fallback to templates when no API key is configured.
 
-### Frontend
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| **Framework** | Streamlit 1.31+ | Interactive dashboard |
-| **Visualization** | Plotly Express | Charts and graphs |
-| **Styling** | Custom CSS | Animations, dark theme |
-| **State** | Streamlit Session State | Cross-component data |
+**A/B testing** — three experiments (urgency vs. friendly, discount vs. free shipping, SMS vs. email) evaluated with z-scores at 95% confidence, including projected revenue lift.
 
-### DevOps & Infrastructure
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| **Hosting** | Streamlit Cloud | App deployment |
-| **CI/CD** | GitHub Actions | Linting and deploy |
-| **Version Control** | Git + GitHub | Code management |
-| **Secrets** | Streamlit Secrets / .env | Credential management |
+**Semantic search** — natural-language queries like "high-value electronics abandonments" matched against session embeddings via cosine similarity, with keyword fallback.
 
----
+**Simulator** — build a cart, abandon it, and watch the recovery flow run end to end.
 
-## 📈 Skills Demonstrated
+## Tech stack
 
-### Data Engineering
-- ✅ Real-time event streaming (Azure Event Hub)
-- ✅ Lakehouse architecture (Databricks + Delta Lake)
-- ✅ Medallion pattern (Bronze → Silver → Gold)
-- ✅ SQL transformations with dbt Core
-- ✅ Delta Lake features (ACID, time travel, schema evolution)
-- ✅ Data quality validation and session-based event tracking (session IDs assigned at generation)
+| Layer | Technology |
+|-------|------------|
+| Streaming | Azure Event Hubs |
+| Lakehouse | Databricks, Delta Lake, Delta Live Tables |
+| Transformation | dbt Core |
+| LLM | Cerebras Cloud (LLaMA 3.1-8B) |
+| Embeddings | Voyage AI (voyage-2) |
+| Dashboard | Streamlit + Plotly |
+| CI/CD | GitHub Actions (lint + deploy) |
 
-### Analytics & Statistics
-- ✅ KPI dashboard development
-- ✅ A/B testing with statistical significance (z-score, 95% CI)
-- ✅ Conversion funnel analysis
-- ✅ Cohort analysis by customer archetype
-- ✅ Simulated forecast visualization
-- ✅ ROI modeling and revenue attribution
-
-### AI/ML Engineering
-- ✅ LLM integration (Cerebras Cloud API)
-- ✅ Prompt engineering for personalization
-- ✅ Vector embeddings (Voyage AI)
-- ✅ Semantic similarity search
-- ✅ Graceful fallback handling
-- ✅ Customer archetype classification
-
-### Full-Stack Development
-- ✅ Interactive web application (Streamlit)
-- ✅ Data visualization (Plotly)
-- ✅ Custom CSS animations and theming
-- ✅ Real-time data simulation
-
-### DevOps & Best Practices
-- ✅ CI/CD pipeline (GitHub Actions — lint + deploy)
-- ✅ Environment variable management
-- ✅ Secure credential handling
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.10+
-- (Optional) Cerebras API key for AI messages
-- (Optional) Voyage AI key for semantic search
-
-### Installation
+## Quick start
 
 ```bash
-# Clone the repository
 git clone https://github.com/Mohith-akash/Vortex-The-Revenue-Recovery-Engine.git
 cd Vortex-The-Revenue-Recovery-Engine
 
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Run the app
 cd streamlit_app
 streamlit run app.py
 ```
 
-### Environment Variables (Optional)
-
-Create a `.env` file in the root directory:
+The app runs without any API keys, using sample data and template-based messages. To enable the AI features and the real streaming pipeline, create a `.env` in the project root:
 
 ```env
-# AI Services (optional - app works without these)
+# AI services (optional — app falls back to templates without them)
 CEREBRAS_API_KEY=your_cerebras_key
 VOYAGE_API_KEY=your_voyage_key
 
-# Azure Event Hub (for production streaming)
+# Azure Event Hubs (for the streaming pipeline)
 AZURE_CONNECTION_STRING=your_connection_string
 EVENT_HUB_NAME=vortex-events
 
-# Databricks (for production data)
+# Databricks (for lakehouse-backed data)
 DBT_DATABRICKS_HOST=your_workspace.cloud.databricks.com
 DBT_DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/your_warehouse
 DBT_DATABRICKS_TOKEN=your_token
 ```
 
-> **Note**: The app works without any API keys using sample data and template-based message generation.
-
----
-
-## 📁 Project Structure
+## Project structure
 
 ```
 Vortex-The-Revenue-Recovery-Engine/
-├── .github/workflows/          # CI/CD pipeline
-│   └── ci.yml                  # GitHub Actions workflow
-├── databricks/                 # Databricks configuration
-│   └── databricks.yml          # Asset bundle config
-├── notebooks/                  # Databricks notebooks
-│   ├── 01_dlt_pipeline.py      # Delta Live Tables
-│   ├── 02_recovery_orchestration.py
-│   ├── 03_time_travel_demo.py
-│   ├── 04_dashboard_queries.sql
-│   ├── 05_streaming_pipeline_no_dlt.py
-│   └── 06_sample_data_setup.py
-├── scripts/                    # Utility scripts
-│   ├── traffic_generator.py    # Event simulation
-│   ├── recovery_tracker.py     # Recovery monitoring
-│   ├── databricks_consumer.py  # Event consumer
-│   └── heartbeat.py            # Health check
-├── streamlit_app/              # Main application
-│   ├── app.py                  # Dashboard (7 tabs)
-│   ├── ai_recovery.py          # Cerebras integration
-│   ├── semantic_search.py      # Voyage AI search
-│   ├── data_generator.py       # Sample data
-│   └── requirements.txt        # App dependencies
-├── vortex_analytics/           # dbt project
-│   ├── dbt_project.yml         # dbt configuration
-│   ├── models/                 # SQL models
-│   └── profiles.yml            # Connection profiles
-├── pyproject.toml              # Python project config
-├── requirements.txt            # Root dependencies
-├── LICENSE                     # MIT License
-└── README.md                   # This file
+├── notebooks/                      # Databricks notebooks
+│   ├── 01_dlt_pipeline.py          # DLT pipeline with expectations (Bronze/Silver/Gold)
+│   ├── 02_recovery_orchestration.py# Recovery queue orchestration
+│   ├── 03_time_travel_demo.py      # Delta Lake versioning: audit, debug, restore
+│   ├── 04_dashboard_queries.sql    # Gold-layer analytics queries
+│   ├── 05_streaming_pipeline_no_dlt.py  # Same pipeline without DLT — runs on
+│   │                               #   Databricks Free Edition (structured streaming)
+│   └── 06_sample_data_setup.py     # Seed sample data in Databricks
+├── scripts/
+│   ├── traffic_generator.py        # Simulates shopper events into Event Hubs
+│   ├── databricks_consumer.py      # Event Hubs → Delta consumer
+│   ├── recovery_tracker.py         # Recovery outcome monitoring
+│   └── heartbeat.py                # Keeps the Streamlit demo awake
+├── streamlit_app/
+│   ├── app.py                      # Dashboard (7 tabs)
+│   ├── styles.py                   # CSS theme
+│   ├── ai_recovery.py              # Cerebras integration + archetype logic
+│   ├── semantic_search.py          # Voyage AI search with keyword fallback
+│   └── data_generator.py           # Demo sample data
+├── vortex_analytics/               # dbt project (gold models)
+├── databricks/databricks.yml       # Asset bundle config
+└── .github/workflows/ci.yml        # Lint + deploy
 ```
 
----
+Two pipeline variants exist on purpose: `01_dlt_pipeline.py` is the production-style DLT version with expectations; `05_streaming_pipeline_no_dlt.py` implements the same flow with plain structured streaming so it runs on Databricks Free Edition.
 
-## 📊 Key Metrics (Demo Data)
+## License
 
-| Metric | Value |
-|--------|-------|
-| Sample Events | 1,000+ |
-| Abandoned Carts | ~300 |
-| Recovery Rate | 32% (at 5-min response) |
-| A/B Test Confidence | 95% |
-| Customer Archetypes | 5 types |
-| Product Categories | 7 categories |
+MIT — see [LICENSE](LICENSE).
 
----
-
-## 🔐 Security
-
-- ✅ API keys stored in environment variables
-- ✅ `.env` file excluded from git
-- ✅ Streamlit secrets for cloud deployment
-- ✅ No hardcoded credentials in source code
-- ✅ Databricks secret scopes for production
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👤 Author
-
-**Mohith Akash**
-
-[![GitHub](https://img.shields.io/badge/GitHub-@Mohith--akash-181717?style=flat&logo=github)](https://github.com/Mohith-akash)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mohith_Akash-0A66C2?style=flat&logo=linkedin)](https://linkedin.com/in/mohith-akash)
-
----
-
-<p align="center">
-  <a href="https://vortex-the-revenue-recovery-engine.streamlit.app/">
-    <img src="https://img.shields.io/badge/🌀_TRY_VORTEX_NOW-7c3aed?style=for-the-badge" alt="Try Vortex"/>
-  </a>
-</p>
-
-<p align="center">
-  <strong>⭐ Star this repo if you found it useful!</strong>
-</p>
+Built by [Mohith Akash](https://github.com/Mohith-akash) · [LinkedIn](https://linkedin.com/in/mohith-akash)
