@@ -6,7 +6,7 @@ Real-time cart-abandonment recovery platform: e-commerce events stream through A
 
 ## About the demo
 
-The public demo runs on **generated sample data** (~1,000 events), because keeping Event Hubs plus a Databricks cluster hot 24/7 costs real money for a portfolio project. The streaming pipeline itself is real and in this repo: `scripts/traffic_generator.py` produces events into Azure Event Hubs, and the notebooks in `notebooks/` consume them into Bronze/Silver/Gold Delta tables with end-to-end latency under 500ms. The demo showcases the analytics and AI layers on top of a static snapshot of that data.
+The public demo runs on **generated sample data** (~1,000 events), because keeping Event Hubs plus a Databricks cluster hot 24/7 costs real money for a portfolio project. The streaming pipeline itself is real and in this repo: `scripts/traffic_generator.py` produces events into Azure Event Hubs, and the notebooks in `notebooks/` consume them into Bronze/Silver/Gold Delta tables with end-to-end latency under 500ms. The demo runs the analytics and AI layers on top of a static snapshot of that data.
 
 What you can do in the demo:
 
@@ -18,7 +18,7 @@ What you can do in the demo:
 
 ## Problem
 
-Average cart-abandonment rates sit around 70% — most potential e-commerce revenue never converts.
+Average cart-abandonment rates sit around 70%, so most potential e-commerce revenue never converts.
 
 | Challenge | Approach |
 |-----------|----------|
@@ -59,19 +59,19 @@ Average cart-abandonment rates sit around 70% — most potential e-commerce reve
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-Data quality is enforced with DLT expectations on every layer — bad records are quarantined into a dead-letter table instead of failing the pipeline. dbt Core models build the cart-abandonment analytics, including a recovery queue for carts over $500.
+Data quality is enforced with DLT expectations on every layer: bad records are quarantined into a dead-letter table instead of failing the pipeline. dbt Core models build the cart-abandonment analytics, including a recovery queue for carts over $500.
 
 ## Features
 
-**Recovery analytics** — timing analysis comparing 5-minute vs 24-hour response windows, channel effectiveness (SMS/push/email), and an ROI calculator with priority-scoring breakdown.
+**Recovery analytics:** timing analysis comparing 5-minute vs 24-hour response windows, channel effectiveness (SMS/push/email), and an ROI calculator with priority-scoring breakdown.
 
-**AI recovery messages** — customer archetype detection (bargain hunter, premium shopper, ...), context-aware tone matching, multi-channel templates, and graceful fallback to templates when no API key is configured.
+**AI recovery messages:** customer archetype detection (bargain hunter, premium shopper, ...), context-aware tone matching, multi-channel templates, and graceful fallback to templates when no API key is configured.
 
-**A/B testing** — three experiments (urgency vs. friendly, discount vs. free shipping, SMS vs. email) evaluated with z-scores at 95% confidence, including projected revenue lift.
+**A/B testing:** three experiments (urgency vs. friendly, discount vs. free shipping, SMS vs. email) evaluated with z-scores at 95% confidence, including projected revenue lift.
 
-**Semantic search** — natural-language queries like "high-value electronics abandonments" matched against session embeddings via cosine similarity, with keyword fallback.
+**Semantic search:** natural-language queries like "high-value electronics abandonments" matched against session embeddings via cosine similarity, with keyword fallback.
 
-**Simulator** — build a cart, abandon it, and watch the recovery flow run end to end.
+**Simulator:** build a cart, abandon it, and watch the recovery flow run end to end.
 
 ## Tech stack
 
@@ -102,7 +102,7 @@ streamlit run app.py
 The app runs without any API keys, using sample data and template-based messages. To enable the AI features and the real streaming pipeline, create a `.env` in the project root:
 
 ```env
-# AI services (optional — app falls back to templates without them)
+# AI services (optional, app falls back to templates without them)
 CEREBRAS_API_KEY=your_cerebras_key
 VOYAGE_API_KEY=your_voyage_key
 
@@ -125,7 +125,7 @@ Vortex-The-Revenue-Recovery-Engine/
 │   ├── 02_recovery_orchestration.py# Recovery queue orchestration
 │   ├── 03_time_travel_demo.py      # Delta Lake versioning: audit, debug, restore
 │   ├── 04_dashboard_queries.sql    # Gold-layer analytics queries
-│   ├── 05_streaming_pipeline_no_dlt.py  # Same pipeline without DLT — runs on
+│   ├── 05_streaming_pipeline_no_dlt.py  # Same pipeline without DLT; runs on
 │   │                               #   Databricks Free Edition (structured streaming)
 │   └── 06_sample_data_setup.py     # Seed sample data in Databricks
 ├── scripts/
@@ -148,6 +148,6 @@ Two pipeline variants exist on purpose: `01_dlt_pipeline.py` is the production-s
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT license, see [LICENSE](LICENSE).
 
 Built by [Mohith Akash](https://github.com/Mohith-akash) · [LinkedIn](https://linkedin.com/in/mohith-akash)
