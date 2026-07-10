@@ -211,6 +211,11 @@ Output the message only, no quotes, no alternatives, no explanations."""
 
 def create_recovery_context_from_event(event: dict) -> RecoveryContext:
     """Create a RecoveryContext from an event dictionary."""
+    # dataframe rows deliver missing discount codes as float NaN, which is
+    # truthy and crashes string concatenation downstream - normalize to None
+    discount = event.get("discount_code_used")
+    if not isinstance(discount, str) or not discount:
+        discount = None
     return RecoveryContext(
         customer_name=event.get("user_name", "Customer"),
         customer_archetype=event.get("user_archetype", "ImpulseBuyer"),
@@ -219,7 +224,7 @@ def create_recovery_context_from_event(event: dict) -> RecoveryContext:
         cart_total=event.get("cart_total", 0),
         abandonment_stage=event.get("abandonment_stage", "cart"),
         is_returning=event.get("is_returning_user", False),
-        discount_code=event.get("discount_code_used"),
+        discount_code=discount,
         utm_source=event.get("utm_source", "direct"),
         session_duration=event.get("session_duration_seconds", 0),
         page_views=event.get("page_views_before_cart", 0),
