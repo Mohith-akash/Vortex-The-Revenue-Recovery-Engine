@@ -1,6 +1,6 @@
 """
 AI Recovery Module - Uses Cerebras LLM for personalized cart recovery messages.
-Uses Llama 3.1 8B (cheapest model at $0.10/M tokens) to conserve tokens.
+Runs on gpt-oss-120b (Cerebras archived the Llama 3.1 models in May 2026).
 Falls back to templates if API is unavailable.
 """
 
@@ -54,10 +54,14 @@ FALLBACK_TEMPLATES = {
 
 
 class AIRecoveryEngine:
-    """Generate AI-powered recovery messages using Cerebras Llama 3.1 8B."""
+    """Generate AI-powered recovery messages using Cerebras gpt-oss-120b."""
 
-    # Use Llama 3.1 8B - cheapest model at $0.10/M tokens
-    MODEL = "llama-3.1-8b"
+    # llama-3.1-8b was archived, every call 404'd and the demo silently fell
+    # back to templates. gpt-oss is a reasoning model: hidden reasoning comes
+    # out of the same token budget, so the cap has to leave room for it on
+    # top of the ~35 word message, and effort is kept low to save credit
+    MODEL = "gpt-oss-120b"
+    MAX_COMPLETION_TOKENS = 400
 
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.getenv("CEREBRAS_API_KEY")
@@ -113,7 +117,8 @@ Output the message only, no quotes, no alternatives, no explanations."""
                     },
                     {"role": "user", "content": prompt},
                 ],
-                max_tokens=60,
+                max_completion_tokens=self.MAX_COMPLETION_TOKENS,
+                reasoning_effort="low",
                 temperature=0.7,
             )
 

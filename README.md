@@ -11,7 +11,7 @@ The public demo runs on **generated sample data** (~1,000 events), because keepi
 What you can do in the demo:
 
 - KPI dashboard with revenue-at-risk and recovery metrics
-- AI recovery-message generation (Cerebras LLaMA 3.1-8B)
+- AI recovery-message generation (Cerebras GPT-OSS 120B)
 - Semantic session search (Voyage AI embeddings)
 - A/B testing framework with z-score significance
 - Interactive cart-abandonment simulator
@@ -47,8 +47,8 @@ Average cart-abandonment rates sit around 70%, so most potential e-commerce reve
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │  AI SERVICES                                                         │
-│  Cerebras (LLaMA 3.1-8B) → recovery message generation               │
-│  Voyage AI (voyage-2)    → semantic embeddings + search              │
+│  Cerebras (GPT-OSS 120B)     → recovery message generation           │
+│  Voyage AI (voyage-3.5-lite) → semantic embeddings + search          │
 └─────────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -65,7 +65,7 @@ Data quality is enforced with DLT expectations on every layer: bad records are q
 
 **Recovery analytics:** timing analysis comparing 5-minute vs 24-hour response windows, channel effectiveness (SMS/push/email), and an ROI calculator with priority-scoring breakdown.
 
-**AI recovery messages:** customer archetype detection (bargain hunter, premium shopper, ...), context-aware tone matching, multi-channel templates, and graceful fallback to templates when no API key is configured.
+**AI recovery messages:** five shopper archetypes (impulse buyer, window shopper, price checker, committed buyer, quick browser), each with its own tone. The LLM writes the message for that cart and archetype, the channel is picked by cart value, and templates take over when no API key is set or the call fails.
 
 **A/B testing:** three experiments (urgency vs. friendly, discount vs. free shipping, SMS vs. email) evaluated with z-scores at 95% confidence, including projected revenue lift.
 
@@ -80,8 +80,8 @@ Data quality is enforced with DLT expectations on every layer: bad records are q
 | Streaming | Azure Event Hubs |
 | Lakehouse | Databricks, Delta Lake, Delta Live Tables |
 | Transformation | dbt Core |
-| LLM | Cerebras Cloud (LLaMA 3.1-8B) |
-| Embeddings | Voyage AI (voyage-2) |
+| LLM | Cerebras Cloud (GPT-OSS 120B) |
+| Embeddings | Voyage AI (voyage-3.5-lite) |
 | Dashboard | Streamlit + Plotly |
 | CI/CD | GitHub Actions (lint + deploy) |
 
