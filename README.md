@@ -6,7 +6,7 @@ Real-time cart-abandonment recovery platform: e-commerce events stream through A
 
 ## About the demo
 
-The public demo runs on **generated sample data** (~1,000 shopping sessions, about 3,700 events), because keeping Event Hubs plus a Databricks cluster hot 24/7 costs real money for a portfolio project. The streaming pipeline itself is real and in this repo: `scripts/traffic_generator.py` produces events into Azure Event Hubs, and the notebooks in `notebooks/` consume them into Bronze/Silver/Gold Delta tables with end-to-end latency under 500ms. The demo runs the analytics and AI layers on top of a static snapshot of that data.
+The public demo runs on **generated sample data** (~1,000 shopping sessions, about 3,700 events), because keeping Event Hubs plus a Databricks cluster hot 24/7 costs real money for a portfolio project. The streaming pipeline itself is real and in this repo: `scripts/traffic_generator.py` produces events into Azure Event Hubs, and the notebooks in `notebooks/` consume them into Bronze/Silver/Gold Delta tables. The demo runs the analytics and AI layers on top of a static snapshot of that data.
 
 What you can do in the demo:
 
@@ -134,7 +134,9 @@ Vortex-The-Revenue-Recovery-Engine/
 │   ├── recovery_tracker.py         # Recovery outcome monitoring
 │   └── heartbeat.py                # Keeps the Streamlit demo awake
 ├── streamlit_app/
-│   ├── app.py                      # Dashboard (7 tabs)
+│   ├── app.py                      # Entry point: setup and the 7 tabs
+│   ├── views/                      # One module per tab
+│   ├── common.py                   # Shared data and chart helpers
 │   ├── styles.py                   # CSS theme
 │   ├── ai_recovery.py              # Cerebras integration + archetype logic
 │   ├── semantic_search.py          # Voyage AI search with keyword fallback
