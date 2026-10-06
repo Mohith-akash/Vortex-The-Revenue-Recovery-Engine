@@ -8,13 +8,15 @@ on:
 
 jobs:
   wake-up:
-    runs-on: ubuntu-latest
+    # pinned: ubuntu-latest moves to 26.04 on 2026-10-19
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install Playwright
         run: |
@@ -27,19 +29,38 @@ jobs:
           node << 'EOF'
           const { chromium } = require('playwright');
 
+          // text the python app renders. on Community Cloud the app sits in
+          // an iframe, so read every frame, not just the top page
+          const MARKER = 'VORTEX DASHBOARD';
+
+          async function appText(page) {
+            const chunks = [];
+            for (const frame of page.frames()) {
+              try {
+                chunks.push(await frame.innerText('body', { timeout: 2000 }));
+              } catch (e) {}
+            }
+            return chunks.join('\n').toUpperCase();
+          }
+
           (async () => {
             console.log('🔄 Starting browser to wake up Vortex app...');
 
             const browser = await chromium.launch({ headless: true });
             const page = await browser.newPage();
+            let woke = false;
+            let rendered = false;
 
             try {
-              // Navigate to the app
+              // Navigate to the app. Not 'networkidle': a live streamlit page
+              // keeps its websocket busy and never goes idle, so goto timed out
+              // on a healthy app and the job still went green
               console.log('📍 Navigating to Vortex app...');
               await page.goto('https://vortex-the-revenue-recovery-engine.streamlit.app', {
-                waitUntil: 'networkidle',
+                waitUntil: 'domcontentloaded',
                 timeout: 120000
               });
+              await page.waitForTimeout(5000);
 
               // Check if app is sleeping
               const sleepButton = await page.$('button:has-text("Yes, get this app back up")');
@@ -47,16 +68,14 @@ jobs:
               if (sleepButton) {
                 console.log('😴 App is sleeping, clicking wake-up button...');
                 await sleepButton.click();
-
-                // Wait for app to load
+                woke = true;
                 console.log('⏳ Waiting for app to wake up...');
-                await page.waitForTimeout(60000);
+              }
 
-                // Verify app is awake by checking for content
-                await page.waitForSelector('body', { timeout: 60000 });
-                console.log('✅ Vortex is now awake!');
-              } else {
-                console.log('✅ Vortex is already awake!');
+              // Wait for the dashboard itself, up to 5 min for a cold boot
+              for (let i = 0; i < 60 && !rendered; i++) {
+                rendered = (await appText(page)).includes(MARKER);
+                if (!rendered) await page.waitForTimeout(5000);
               }
 
               // Take a screenshot for verification
@@ -66,13 +85,20 @@ jobs:
               console.log('⚠️ Error:', error.message);
             } finally {
               await browser.close();
-              console.log('🎉 Keep-alive job completed!');
+            }
+
+            if (rendered) {
+              console.log(woke ? '✅ Vortex is now awake!' : '✅ Vortex is already awake!');
+            } else {
+              // fail the run so a down app shows up as red, not green
+              console.log('::error::Vortex did not render its dashboard within 5 minutes');
+              process.exitCode = 1;
             }
           })();
           EOF
 
       - name: Upload screenshot
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: vortex-screenshot

@@ -14,17 +14,19 @@ env:
 jobs:
   lint:
     name: Code Quality
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Ruff
-        run: pip install ruff
+        # pinned so a new ruff release can't fail unchanged code (ruff 0.16
+        # did exactly that to the olist repo)
+        run: pip install ruff==0.16.10
 
       - name: Run Ruff linter
         run: ruff check . --output-format=github
@@ -34,11 +36,11 @@ jobs:
 
   deploy:
     name: Deploy to Databricks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: lint
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check for Databricks secrets
         id: check-secrets
