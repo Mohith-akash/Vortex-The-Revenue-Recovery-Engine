@@ -243,7 +243,7 @@ def render_dashboard():
     st.markdown("---")
 
     # Hourly Abandonment Trend (Simulated baseline pattern)
-    st.subheader("📈 Hourly Abandonment Trend — Simulated Baseline")
+    st.subheader("📈 Hourly Abandonment Trend: Simulated Baseline")
     st.caption(
         "Simulated baseline pattern (not a real forecast). "
         "Past 24h is a deterministic diurnal curve seeded on the generated data; "
@@ -254,7 +254,7 @@ def render_dashboard():
     hours = list(range(-24, 7))
     base_rate = len(df[df["event_type"] == "cart_abandoned"]) / 24
 
-    # Deterministic diurnal pattern (no randomness) — higher during day, lower at night
+    # Deterministic diurnal pattern (no randomness): higher during day, lower at night
     historical = []
     for h in hours[:24]:
         hour_of_day = (h % 24 + 24) % 24  # Convert to 0-23
@@ -268,7 +268,7 @@ def render_dashboard():
         historical.append(int(base_rate * multiplier))
 
     # Honest "forecast": simple 7-point rolling average of the historical curve
-    # extended forward. No randomness, no fake ML — just a moving average.
+    # extended forward. No randomness, no fake ML, just a moving average.
     hist_series = pd.Series(historical)
     rolling = hist_series.rolling(window=7, min_periods=1).mean()
     last_avg = float(rolling.iloc[-1])
@@ -294,7 +294,7 @@ def render_dashboard():
         )
     )
 
-    # Projection (next 6 hours) — rolling-average extension, not a real forecast
+    # Projection (next 6 hours): rolling-average extension, not a real forecast
     fig.add_trace(
         go.Scatter(
             x=hours[24:],
@@ -564,7 +564,7 @@ def render_recovery_analytics():
     st.markdown("---")
 
     # ROI Calculator
-    st.subheader("🧮 ROI Calculator — Estimate Your Potential Revenue Gain")
+    st.subheader("🧮 ROI Calculator: Estimate Your Potential Revenue Gain")
     st.caption("""
     Adjust the sliders to match your store's metrics and see how much more revenue you could recover
     by optimizing your message timing.
@@ -649,7 +649,7 @@ def render_try_it():
         st.caption(f"*{ARCHETYPES[archetype]['description']}*")
 
         product = st.selectbox(
-            "📦 Product", PRODUCTS, format_func=lambda p: f"{p['name']} — ${p['price']:,.0f}"
+            "📦 Product", PRODUCTS, format_func=lambda p: f"{p['name']} (${p['price']:,.0f})"
         )
 
         st.markdown("---")
@@ -1002,12 +1002,12 @@ def render_architecture():
 | **Storage** | Delta Lake | ACID transactions, time travel |
 | **Data Quality** | DLT Expectations | Schema validation, quality checks |
 | **Transformation** | dbt Core | SQL-based data modeling |
-| **LLM** | Cerebras Llama 3.1 8B | AI-powered recovery messages |
+| **LLM** | Cerebras GPT-OSS 120B | AI-powered recovery messages |
 | **Embeddings** | Voyage AI | Semantic search vectors |
 | **Frontend** | Streamlit | Interactive dashboards |
 | **Charts** | Plotly | Dynamic visualizations |
 | **Language** | Python 3.11+ | Core development |
-| **CI/CD** | GitHub Actions | Automated testing & deployment |
+| **CI/CD** | GitHub Actions | Lint and format checks on every push |
         """)
 
     with col2:

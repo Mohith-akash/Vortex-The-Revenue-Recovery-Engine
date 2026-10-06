@@ -6,7 +6,7 @@ Real-time cart-abandonment recovery platform: e-commerce events stream through A
 
 ## About the demo
 
-The public demo runs on **generated sample data** (~1,000 events), because keeping Event Hubs plus a Databricks cluster hot 24/7 costs real money for a portfolio project. The streaming pipeline itself is real and in this repo: `scripts/traffic_generator.py` produces events into Azure Event Hubs, and the notebooks in `notebooks/` consume them into Bronze/Silver/Gold Delta tables with end-to-end latency under 500ms. The demo runs the analytics and AI layers on top of a static snapshot of that data.
+The public demo runs on **generated sample data** (~1,000 shopping sessions, about 3,700 events), because keeping Event Hubs plus a Databricks cluster hot 24/7 costs real money for a portfolio project. The streaming pipeline itself is real and in this repo: `scripts/traffic_generator.py` produces events into Azure Event Hubs, and the notebooks in `notebooks/` consume them into Bronze/Silver/Gold Delta tables with end-to-end latency under 500ms. The demo runs the analytics and AI layers on top of a static snapshot of that data.
 
 What you can do in the demo:
 
@@ -59,7 +59,7 @@ Average cart-abandonment rates sit around 70%, so most potential e-commerce reve
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-Data quality is enforced with DLT expectations on every layer: bad records are quarantined into a dead-letter table instead of failing the pipeline. dbt Core models build the cart-abandonment analytics, including a recovery queue for carts over $500.
+Data quality is enforced with DLT expectations on every layer: invalid rows are dropped (`expect_or_drop`) and suspicious ones are counted (`expect`), so one bad batch does not fail the pipeline. The Gold layer in DLT builds the cart-abandonment analytics, including a prioritized recovery queue (`gold_recovery_queue`); a dbt Core mart (`gold_user_sales`) summarizes revenue by shopper archetype and risk level.
 
 ## Features
 
@@ -139,7 +139,7 @@ Vortex-The-Revenue-Recovery-Engine/
 │   ├── ai_recovery.py              # Cerebras integration + archetype logic
 │   ├── semantic_search.py          # Voyage AI search with keyword fallback
 │   └── data_generator.py           # Demo sample data
-├── vortex_analytics/               # dbt project (gold models)
+├── vortex_analytics/               # dbt project (gold_user_sales mart)
 ├── databricks/databricks.yml       # Asset bundle config
 └── .github/workflows/ci.yml        # Lint + deploy
 ```
