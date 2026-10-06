@@ -34,6 +34,25 @@ jobs:
       - name: Run Ruff formatter check
         run: ruff format --check .
 
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # the tests cover the template fallback and the data generator, so the
+      # cerebras/voyage SDKs and streamlit are not needed here
+      - name: Install test dependencies
+        run: pip install pytest faker==40.28.1
+
+      - name: Run tests
+        run: python -m pytest tests -q
+
   deploy:
     name: Deploy to Databricks
     runs-on: ubuntu-24.04

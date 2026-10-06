@@ -83,7 +83,7 @@ Data quality is enforced with DLT expectations on every layer: invalid rows are 
 | LLM | Cerebras Cloud (GPT-OSS 120B) |
 | Embeddings | Voyage AI (voyage-3.5-lite) |
 | Dashboard | Streamlit + Plotly |
-| CI/CD | GitHub Actions (lint + deploy) |
+| CI/CD | GitHub Actions (lint, format check, unit tests) |
 
 ## Quick start
 
@@ -141,7 +141,8 @@ Vortex-The-Revenue-Recovery-Engine/
 │   └── data_generator.py           # Demo sample data
 ├── vortex_analytics/               # dbt project (gold_user_sales mart)
 ├── databricks/databricks.yml       # Asset bundle config
-└── .github/workflows/ci.yml        # Lint + deploy
+├── tests/                          # pytest unit tests
+└── .github/workflows/ci.yml        # Lint + unit tests
 ```
 
 Two pipeline variants exist on purpose: `01_dlt_pipeline.py` is the production-style DLT version with expectations; `05_streaming_pipeline_no_dlt.py` implements the same flow with plain structured streaming so it runs on Databricks Free Edition.

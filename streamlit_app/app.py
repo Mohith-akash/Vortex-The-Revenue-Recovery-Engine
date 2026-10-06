@@ -1007,7 +1007,7 @@ def render_architecture():
 | **Frontend** | Streamlit | Interactive dashboards |
 | **Charts** | Plotly | Dynamic visualizations |
 | **Language** | Python 3.11+ | Core development |
-| **CI/CD** | GitHub Actions | Lint and format checks on every push |
+| **CI/CD** | GitHub Actions | Lint, format and unit tests on every push |
         """)
 
     with col2:
