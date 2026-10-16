@@ -1,6 +1,7 @@
 """Search tab: semantic search over sessions."""
 
 import streamlit as st
+from semantic_search import MAX_EMBEDDED_SESSIONS
 
 
 def render_search():
@@ -41,6 +42,11 @@ def render_search():
 
         if results:
             st.subheader(f"📊 Found {len(results)} matching sessions")
+            st.caption(
+                f"Ranked by Voyage AI embeddings over a {MAX_EMBEDDED_SESSIONS}-session sample."
+                if engine.last_method == "embeddings"
+                else "Keyword match: the embedding service is unavailable right now."
+            )
 
             for r in results:
                 d = r["data"]

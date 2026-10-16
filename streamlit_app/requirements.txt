@@ -5,6 +5,13 @@
 streamlit==1.59.1
 pandas==2.3.3
 plotly==6.9.0
+# starlette 1.8 sends the gzip response start early and streamlit 1.59's
+# override never forwards it: favicon.png and other images 500 with
+# "Expected ASGI message 'http.response.start'". 1.7.0 is the last that works
+starlette==1.7.0
+# 25.x and 26.x are a known segfault (apache/arrow#50471); Community Cloud
+# swaps them for 24.0.0 anyway, so pin what actually runs
+pyarrow==24.0.0
 
 # Data generation
 faker==40.28.1

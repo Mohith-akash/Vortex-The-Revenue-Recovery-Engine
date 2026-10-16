@@ -15,6 +15,12 @@ except ImportError:
     VOYAGE_AVAILABLE = False
     voyageai = None
 
+# Voyage's free tier allows 10K tokens a minute. All 1,000 demo sessions came to
+# ~65K tokens, so the embed call was rejected on every page load and search
+# silently fell back to keywords. At ~55 tokens a session, 120 sessions (~6.7K)
+# fit with room for queries; keyword search still covers every session.
+MAX_EMBEDDED_SESSIONS = 120
+
 
 class SemanticSearchEngine:
     """Semantic search for user sessions using Voyage AI embeddings."""
@@ -24,6 +30,7 @@ class SemanticSearchEngine:
         self.client = None
         self.session_embeddings = {}  # Cache: session_id -> embedding
         self.session_data = {}  # Cache: session_id -> session info
+        self.last_method = "keyword"  # how the latest search was ranked
 
         if self.api_key and VOYAGE_AVAILABLE:
             try:
@@ -34,7 +41,7 @@ class SemanticSearchEngine:
 
     def create_session_text(self, event: dict) -> str:
         """Convert a session event to searchable text."""
-        return f"""
+        text = f"""
         Customer: {event.get("user_name", "Unknown")} ({event.get("user_archetype", "Unknown")})
         Product: {event.get("product_name", "Unknown")} in {event.get("product_category", "Unknown")} for ${event.get("cart_total", 0):.2f}
         Behavior: Viewed {event.get("page_views_before_cart", 0)} pages over {event.get("session_duration_seconds", 0)} seconds
@@ -42,13 +49,12 @@ class SemanticSearchEngine:
         Outcome: {"Abandoned" if event.get("is_abandonment") else "Purchased" if event.get("is_conversion") else "Browsing"}
         {"Abandonment stage: " + event.get("abandonment_stage", "") if event.get("is_abandonment") else ""}
         {"Priority: " + event.get("recovery_priority", "") if event.get("is_abandonment") else ""}
-        """.strip()
+        """
+        # drop the source indentation and empty lines: ~15% of the tokens were whitespace
+        return "\n".join(line.strip() for line in text.splitlines() if line.strip())
 
     def index_sessions(self, events: list) -> int:
-        """Index a list of events for semantic search."""
-        if not self.client:
-            return 0
-
+        """Index events for search. Returns how many sessions got embeddings."""
         # Get unique sessions (take the last event per session)
         sessions = {}
         for event in events:
@@ -56,25 +62,19 @@ class SemanticSearchEngine:
             if session_id:
                 sessions[session_id] = event
 
-        if not sessions:
+        # keyword search works on every session, with or without Voyage
+        self.session_data.update(sessions)
+
+        if not self.client or not sessions:
             return 0
 
-        # Create text representations
-        texts = []
-        session_ids = []
-        for session_id, event in sessions.items():
-            text = self.create_session_text(event)
-            texts.append(text)
-            session_ids.append(session_id)
-            self.session_data[session_id] = event
+        session_ids = list(sessions)[:MAX_EMBEDDED_SESSIONS]
+        texts = [self.create_session_text(sessions[s]) for s in session_ids]
 
         try:
-            # Get embeddings from Voyage AI
             result = self.client.embed(texts, model="voyage-3.5-lite", input_type="document")
-
-            # Cache embeddings
-            for i, embedding in enumerate(result.embeddings):
-                self.session_embeddings[session_ids[i]] = embedding
+            for session_id, embedding in zip(session_ids, result.embeddings, strict=True):
+                self.session_embeddings[session_id] = embedding
 
             return len(session_ids)
 
@@ -101,6 +101,8 @@ class SemanticSearchEngine:
             # Sort by similarity
             similarities.sort(key=lambda x: x[1], reverse=True)
 
+            self.last_method = "embeddings"
+
             # Return top K results with session data
             results = []
             for session_id, score in similarities[:top_k]:
@@ -121,6 +123,7 @@ class SemanticSearchEngine:
 
     def _fallback_search(self, query: str, top_k: int) -> list:
         """Keyword-based fallback when Voyage AI is unavailable."""
+        self.last_method = "keyword"
         query_lower = query.lower()
         results = []
 
