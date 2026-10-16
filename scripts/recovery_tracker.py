@@ -7,16 +7,11 @@ for personalized messaging.
 """
 
 import json
-import os
 import sys
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Reuse the canonical fallback templates from the Streamlit app's ai_recovery
 # module so there is a single source of truth for per-archetype message text.
@@ -27,9 +22,6 @@ try:
     from ai_recovery import FALLBACK_TEMPLATES as _SHARED_TEMPLATES
 except ImportError:
     _SHARED_TEMPLATES = {}
-
-# Cerebras API config - will be used for AI-powered recovery messages
-CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY")
 
 
 @dataclass
@@ -130,75 +122,6 @@ def generate_recovery_message(
     if item_count > 1:
         return f"You left {item_count} items in your cart (${cart_total:.2f}). Ready to check out?"
     return f"Your {main_item} is still in your cart! Complete your purchase: ${cart_total:.2f}"
-
-
-async def generate_ai_recovery_message(
-    cart_items: list[dict[str, Any]], cart_total: float, user_context: dict[str, Any]
-) -> str:
-    """
-    Use Cerebras AI to generate a hyper-personalized recovery message.
-
-    Only called for high-value carts where the extra effort is worth it.
-    Falls back to template if API is not configured.
-    """
-    if not CEREBRAS_API_KEY:
-        # No API key configured, use template version
-        return generate_recovery_message(
-            cart_items,
-            cart_total,
-            user_context.get("discount_code"),
-            user_context.get("archetype", "unknown"),
-        )
-
-    # Build context for the AI
-    items_desc = ", ".join([item["name"] for item in cart_items[:3]])
-    if len(cart_items) > 3:
-        items_desc += f" and {len(cart_items) - 3} more items"
-
-    prompt = f"""Generate a friendly, conversational cart recovery message.
-
-Customer context:
-- Items in cart: {items_desc}
-- Cart value: ${cart_total:.2f}
-- Device: {user_context.get("device", "unknown")}
-- Region: {user_context.get("geo_region", "unknown")}
-- Traffic source: {user_context.get("utm_source", "unknown")}
-- Returning customer: {user_context.get("is_returning_user", False)}
-
-Write a short, warm message (max 2 sentences) that:
-1. Mentions the main product by name
-2. Creates gentle urgency without being pushy
-3. Sounds like a helpful friend, not a salesperson
-
-Message:"""
-
-    try:
-        # Cerebras API call would go here
-        # For now, return placeholder until API is wired up
-        from cerebras.cloud.sdk import Cerebras
-
-        client = Cerebras(api_key=CEREBRAS_API_KEY)
-        response = client.chat.completions.create(
-            model="llama-3.3-70b", messages=[{"role": "user", "content": prompt}], max_tokens=100
-        )
-        return response.choices[0].message.content.strip()
-
-    except ImportError:
-        # Cerebras SDK not installed
-        return generate_recovery_message(
-            cart_items,
-            cart_total,
-            user_context.get("discount_code"),
-            user_context.get("archetype", "unknown"),
-        )
-    except Exception as e:
-        print(f"AI message generation failed: {e}")
-        return generate_recovery_message(
-            cart_items,
-            cart_total,
-            user_context.get("discount_code"),
-            user_context.get("archetype", "unknown"),
-        )
 
 
 def process_abandonment_event(event: dict[str, Any]) -> RecoveryAction | None:

@@ -32,10 +32,6 @@ class SemanticSearchEngine:
                 print(f"Failed to initialize Voyage AI: {e}")
                 self.client = None
 
-    def is_available(self) -> bool:
-        """Check if semantic search is available."""
-        return self.client is not None
-
     def create_session_text(self, event: dict) -> str:
         """Convert a session event to searchable text."""
         return f"""
@@ -201,34 +197,6 @@ class SemanticSearchEngine:
             return 0.0
 
         return dot_product / (norm_a * norm_b)
-
-    def find_similar_sessions(self, session_id: str, top_k: int = 5) -> list:
-        """Find sessions similar to a given session."""
-        if session_id not in self.session_embeddings:
-            return []
-
-        target_embedding = self.session_embeddings[session_id]
-
-        similarities = []
-        for other_id, embedding in self.session_embeddings.items():
-            if other_id != session_id:
-                similarity = self._cosine_similarity(target_embedding, embedding)
-                similarities.append((other_id, similarity))
-
-        similarities.sort(key=lambda x: x[1], reverse=True)
-
-        results = []
-        for other_id, score in similarities[:top_k]:
-            if other_id in self.session_data:
-                results.append(
-                    {
-                        "session_id": other_id,
-                        "similarity": round(score, 3),
-                        "data": self.session_data[other_id],
-                    }
-                )
-
-        return results
 
     def analyze_patterns(self) -> dict:
         """Analyze patterns in indexed sessions."""

@@ -15,7 +15,6 @@
 from pyspark.sql.functions import col, current_timestamp, lit, udf
 from pyspark.sql.types import StringType
 from datetime import datetime, timedelta
-import json
 
 # Catalog and schema where DLT pipeline writes
 CATALOG = "vortex"

@@ -298,8 +298,6 @@ class ShoppingSession:
     session_duration: int
     page_views: int
     events: list = field(default_factory=list)
-    is_abandoned: bool = False
-    is_converted: bool = False
     abandonment_stage: str | None = None
     recovery_priority: str | None = None
 
@@ -351,7 +349,6 @@ class ShoppingSession:
             # Will they complete or abandon?
             if random.random() > abandon_rate:
                 self._add_event("checkout_success", timestamp)
-                self.is_converted = True
             else:
                 self._abandon_cart(timestamp, "payment")
         else:
@@ -361,7 +358,6 @@ class ShoppingSession:
 
     def _abandon_cart(self, timestamp: datetime, stage: str):
         """Handle cart abandonment."""
-        self.is_abandoned = True
         self.abandonment_stage = stage
         self.recovery_priority = self._calculate_priority()
         self._add_event("cart_abandoned", timestamp)
@@ -423,17 +419,6 @@ def generate_sample_data(num_sessions: int = 100) -> list:
         all_events.extend(events)
 
     return all_events
-
-
-def generate_user_session(name: str, archetype: str, product_name: str) -> ShoppingSession:
-    """Generate a session for a specific user (Try It Yourself mode)."""
-    customer = Customer.generate(archetype=archetype, name=name)
-
-    # Find the product by name
-    product = next((p for p in PRODUCTS if p["name"] == product_name), PRODUCTS[0])
-
-    session = ShoppingSession.generate(customer, product)
-    return session
 
 
 if __name__ == "__main__":

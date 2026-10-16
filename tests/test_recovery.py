@@ -10,7 +10,6 @@ def ctx(**overrides):
         customer_name="Anna Schmidt",
         customer_archetype="WindowShopper",
         product_name="Desk Lamp",
-        product_category="Home",
         cart_total=80.0,
         abandonment_stage="cart",
         is_returning=False,

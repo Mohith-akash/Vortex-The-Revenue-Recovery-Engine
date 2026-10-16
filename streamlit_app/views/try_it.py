@@ -60,7 +60,6 @@ def render_try_it():
                 customer_name=name,
                 customer_archetype=archetype,
                 product_name=product["name"],
-                product_category=product["category"],
                 cart_total=product["price"],
                 abandonment_stage="cart",
                 is_returning=False,

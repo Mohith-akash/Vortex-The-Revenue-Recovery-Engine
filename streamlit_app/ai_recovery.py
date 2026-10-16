@@ -24,7 +24,6 @@ class RecoveryContext:
     customer_name: str
     customer_archetype: str
     product_name: str
-    product_category: str
     cart_total: float
     abandonment_stage: str
     is_returning: bool
@@ -66,12 +65,10 @@ class AIRecoveryEngine:
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.getenv("CEREBRAS_API_KEY")
         self.client = None
-        self.is_connected = False
 
         if self.api_key and CEREBRAS_AVAILABLE:
             try:
                 self.client = Cerebras(api_key=self.api_key)
-                self.is_connected = True
             except Exception:
                 self.client = None
 
@@ -225,7 +222,6 @@ def create_recovery_context_from_event(event: dict) -> RecoveryContext:
         customer_name=event.get("user_name", "Customer"),
         customer_archetype=event.get("user_archetype", "ImpulseBuyer"),
         product_name=event.get("product_name", "your item"),
-        product_category=event.get("product_category", "General"),
         cart_total=event.get("cart_total", 0),
         abandonment_stage=event.get("abandonment_stage", "cart"),
         is_returning=event.get("is_returning_user", False),
@@ -244,7 +240,6 @@ if __name__ == "__main__":
         customer_name="Sarah Johnson",
         customer_archetype="WindowShopper",
         product_name="Sony WH-1000XM5 Headphones",
-        product_category="Electronics",
         cart_total=349.00,
         abandonment_stage="payment",
         is_returning=True,

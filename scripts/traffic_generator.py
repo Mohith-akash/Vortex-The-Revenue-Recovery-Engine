@@ -153,7 +153,6 @@ class UserSession:
     # Session metadata
     is_returning_user: bool = field(default_factory=lambda: random.random() < 0.35)
     discount_code: str | None = field(default_factory=lambda: random.choice(DISCOUNT_CODES))
-    start_time: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     # These get set in __post_init__ based on archetype
     archetype: str = field(default="")
@@ -164,7 +163,6 @@ class UserSession:
     cart: list[Product] = field(default_factory=list)
     is_active: bool = field(default=True)
     state: str = field(default="browse")
-    events_generated: int = field(default=0)
 
     def __post_init__(self) -> None:
         """Set archetype and derived values after initialization."""
@@ -260,7 +258,6 @@ class UserSession:
             self.cart.append(product)
 
         cart_total = sum(item.price for item in self.cart)
-        self.events_generated += 1
 
         # Build the event payload with all the juicy analytics data
         event = {

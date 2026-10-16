@@ -9,13 +9,13 @@
 
 import dlt
 from pyspark.sql.functions import (
-    col, from_json, current_timestamp, 
-    when, lit, expr
+    col, from_json, current_timestamp,
+    when, expr
 )
 from pyspark.sql.types import (
-    StructType, StructField, StringType, 
-    DoubleType, IntegerType, BooleanType, 
-    TimestampType, ArrayType
+    StructType, StructField, StringType,
+    DoubleType, IntegerType, BooleanType,
+    ArrayType
 )
 
 # COMMAND ----------
@@ -26,9 +26,8 @@ from pyspark.sql.types import (
 # COMMAND ----------
 
 # Event Hub connection - reads from Databricks Secrets
-# Secrets already configured: scope="vortex", keys="azure-connection-string" and "event-hub-name"
+# Secret already configured: scope="vortex", key="azure-connection-string"
 EVENTHUB_CONNECTION_STRING = dbutils.secrets.get(scope="vortex", key="azure-connection-string")
-EVENTHUB_NAME = dbutils.secrets.get(scope="vortex", key="event-hub-name")
 
 # Event Hub config for Spark
 eventhub_conf = {
