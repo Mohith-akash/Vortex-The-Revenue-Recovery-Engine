@@ -14,7 +14,7 @@ def render_architecture():
         st.markdown("""
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| **Data Ingestion** | Azure Event Hub | Real-time event streaming |
+| **Data Ingestion** | Azure Event Hub | Event streaming (simulated traffic) |
 | **Processing** | Databricks | Distributed computing |
 | **Storage** | Delta Lake | ACID transactions, time travel |
 | **Data Quality** | DLT Expectations | Schema validation, quality checks |

@@ -1,6 +1,6 @@
 """
 Vortex - The Revenue Recovery Engine
-Vibrant dashboard with recovery timing analytics.
+Dashboard with recovery timing analytics.
 """
 
 from pathlib import Path
