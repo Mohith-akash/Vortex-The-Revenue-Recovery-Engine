@@ -1,6 +1,6 @@
 # Vortex: Revenue Recovery Engine
 
-Real-time cart-abandonment recovery platform: e-commerce events stream through Azure Event Hubs into a Databricks medallion lakehouse, and an LLM generates personalized recovery messages per customer archetype.
+Cart-abandonment recovery platform on simulated storefront traffic: e-commerce events stream through Azure Event Hubs into a Databricks medallion lakehouse, and an LLM generates personalized recovery messages per customer archetype.
 
 **Live demo:** https://vortex-the-revenue-recovery-engine.streamlit.app/
 
@@ -69,7 +69,7 @@ Data quality is enforced with DLT expectations on every layer: invalid rows are 
 
 **A/B testing:** three experiments (urgency vs. friendly, discount vs. free shipping, SMS vs. email) evaluated with z-scores at 95% confidence, including projected revenue lift.
 
-**Semantic search:** natural-language queries like "high-value electronics abandonments" matched against session embeddings via cosine similarity, with keyword fallback.
+**Semantic search:** natural-language queries like "high-value electronics abandonments" matched against session embeddings via cosine similarity (a 120-session embedded sample, to stay inside the Voyage free tier), with keyword search covering every session.
 
 **Simulator:** build a cart, abandon it, and watch the recovery flow run end to end.
 
