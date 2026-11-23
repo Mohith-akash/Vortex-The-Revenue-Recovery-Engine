@@ -21,8 +21,8 @@ CONSUMER_GROUP = "$Default"
 
 # Make sure we have the connection string before trying to connect
 if not CONNECTION_STR:
-    print("❌ Error: AZURE_CONNECTION_STRING missing from .env file")
-    print("   Add your Event Hub connection string to .env and try again")
+    print("Error: AZURE_CONNECTION_STRING missing from .env file")
+    print("Add your Event Hub connection string to .env and try again")
     sys.exit(1)
 
 
@@ -41,17 +41,17 @@ def process_event(partition_context, event):
         total = data.get("cart_total", 0.0)
 
         # Print it nice and aligned so the terminal output is easy to scan
-        print(f"📦 [{e_type.upper():<16}] User: {archetype:<15} | Cart: ${total:8.2f}")
+        print(f"[{e_type.upper():<16}] User: {archetype:<15} | Cart: ${total:8.2f}")
 
     except json.JSONDecodeError:
-        print(f"⚠️  Skipping bad JSON: {raw_body[:50]}...")
+        print(f"Skipping bad JSON: {raw_body[:50]}...")
     except Exception as e:
-        print(f"❌ Something went wrong: {str(e)}")
+        print(f"Something went wrong: {str(e)}")
 
 
 def main():
-    print(f"🔌 Connecting to: {EVENT_HUB}")
-    print(f"   Consumer group: {CONSUMER_GROUP}")
+    print(f"Connecting to: {EVENT_HUB}")
+    print(f"Consumer group: {CONSUMER_GROUP}")
 
     client = EventHubConsumerClient.from_connection_string(
         conn_str=CONNECTION_STR, consumer_group=CONSUMER_GROUP, eventhub_name=EVENT_HUB
@@ -59,16 +59,16 @@ def main():
 
     try:
         with client:
-            print("✅ Connected! Waiting for messages... (Ctrl+C to stop)")
+            print("Connected! Waiting for messages... (Ctrl+C to stop)")
             print("-" * 65)
 
             # starting_position=-1 means only show NEW messages (not old ones)
             client.receive(on_event=process_event, starting_position="-1")
 
     except KeyboardInterrupt:
-        print("\n🛑 Stopping...")
+        print("\nStopping...")
     finally:
-        print("✓ Done.")
+        print("Done.")
 
 
 if __name__ == "__main__":

@@ -35,7 +35,7 @@ EVENT_HUB_NAME = os.getenv("EVENT_HUB_NAME")
 
 if not TEST_MODE:
     if not CONNECTION_STR or not EVENT_HUB_NAME:
-        print("❌ ERROR: Missing Azure credentials in .env file")
+        print("ERROR: Missing Azure credentials in .env file")
         print("Cannot run in Live Mode without AZURE_CONNECTION_STRING and EVENT_HUB_NAME")
         sys.exit(1)
 
@@ -338,15 +338,15 @@ def send_to_azure(event: dict[str, Any], producer: EventHubProducerClient) -> No
         cart_total = event.get("cart_total", 0)
         archetype = event.get("user_archetype", "N/A")
 
-        print(f"☁️  Sent: {event_type:<16} | {archetype:<14} | ${cart_total:>8.2f}")
+        print(f"Sent: {event_type:<16} | {archetype:<14} | ${cart_total:>8.2f}")
     except Exception as e:
-        print(f"❌ Failed to send event: {e}")
+        print(f"Failed to send event: {e}")
 
 
 def main() -> None:
     """Main loop - generates events until stopped with Ctrl+C."""
     mode_display = "TEST (Console Only)" if TEST_MODE else "LIVE (Streaming to Azure)"
-    print(f"⚡ VORTEX GENERATOR v2.0 | MODE: {mode_display}")
+    print(f"VORTEX GENERATOR v2.0 | MODE: {mode_display}")
     print("-" * 65)
 
     sessions: list[UserSession] = []
@@ -354,14 +354,14 @@ def main() -> None:
 
     if not TEST_MODE:
         try:
-            print(f"🔌 Connecting to Event Hub: {EVENT_HUB_NAME}...")
+            print(f"Connecting to Event Hub: {EVENT_HUB_NAME}...")
             producer = EventHubProducerClient.from_connection_string(
                 conn_str=CONNECTION_STR, eventhub_name=EVENT_HUB_NAME
             )
-            print("✓ Connected to Azure Event Hub")
+            print("Connected to Azure Event Hub")
             print("-" * 65)
         except Exception as e:
-            print(f"❌ Failed to connect to Azure: {e}")
+            print(f"Failed to connect to Azure: {e}")
             sys.exit(1)
 
     # Test mode creates a fixed set of sessions for predictable output
@@ -386,11 +386,11 @@ def main() -> None:
             # Wrap up when test sessions are done
             if TEST_MODE and not sessions:
                 print("-" * 65)
-                print("✓ Test complete!")
+                print("Test complete!")
                 print(
                     f"   Events: {stats['events']} | Purchases: {stats['purchases']} | Abandonments: {stats['abandonments']}"
                 )
-                print(f"   Revenue: ${stats['revenue']:.2f}")
+                print(f"Revenue: ${stats['revenue']:.2f}")
                 break
 
             if not sessions:
@@ -435,14 +435,14 @@ def main() -> None:
 
     except KeyboardInterrupt:
         print("\n" + "-" * 65)
-        print("🛑 Stopping generator...")
-        print(f"   Final stats - Events: {stats['events']} | Revenue: ${stats['revenue']:.2f}")
+        print("Stopping generator...")
+        print(f"Final stats - Events: {stats['events']} | Revenue: ${stats['revenue']:.2f}")
 
     finally:
         if producer:
-            print("🔌 Closing Azure connection...")
+            print("Closing Azure connection...")
             producer.close()
-            print("✓ Connection closed")
+            print("Connection closed")
 
         if TEST_MODE:
             input("\nPress Enter to exit...")

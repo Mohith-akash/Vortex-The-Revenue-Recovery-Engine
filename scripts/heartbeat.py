@@ -14,16 +14,16 @@ EVENT_HUB_NAME = os.getenv("EVENT_HUB_NAME")
 
 # Make sure we have credentials before trying to connect
 if not CONNECTION_STR:
-    print("❌ Error: AZURE_CONNECTION_STRING is missing from .env")
+    print("Error: AZURE_CONNECTION_STRING is missing from .env")
     sys.exit(1)
 
 if not EVENT_HUB_NAME:
-    print("❌ Error: EVENT_HUB_NAME is missing from .env")
+    print("Error: EVENT_HUB_NAME is missing from .env")
     sys.exit(1)
 
 
 def send_heartbeat():
-    print(f"🔌 Connecting to hub: {EVENT_HUB_NAME}...")
+    print(f"Connecting to hub: {EVENT_HUB_NAME}...")
 
     # Initialize the client
     producer = EventHubProducerClient.from_connection_string(
@@ -46,8 +46,8 @@ def send_heartbeat():
         # Fire it off
         producer.send_batch(batch)
 
-        print("✅ Success! Heartbeat sent.")
-        print("   Check the 'Incoming Requests' graph in Azure Portal to confirm.")
+        print("Success! Heartbeat sent.")
+        print("Check the 'Incoming Requests' graph in Azure Portal to confirm.")
 
 
 if __name__ == "__main__":
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         send_heartbeat()
         input("\n[Press Enter to close]")  # Keep terminal open on Windows
     except Exception as e:
-        print(f"❌ Connection failed: {e}")
+        print(f"Connection failed: {e}")
         print(
             "\nDev Tip: Check if your IP is blocked or if the connection string includes the EntityPath."
         )
